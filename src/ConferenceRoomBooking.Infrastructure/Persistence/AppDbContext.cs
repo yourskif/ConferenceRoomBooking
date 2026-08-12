@@ -61,6 +61,8 @@ namespace ConferenceRoomBooking.Infrastructure.Persistence
                 .HasForeignKey(bookingExtraService =>
             bookingExtraService.ExtraServiceId);
 
+            SeedData.Seed(modelBuilder);
+
             base.OnModelCreating(modelBuilder);
 
         }
