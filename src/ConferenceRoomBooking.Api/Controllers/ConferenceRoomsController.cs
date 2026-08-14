@@ -1,4 +1,5 @@
-﻿using ConferenceRoomBooking.Infrastructure.Persistence;
+﻿using ConferenceRoomBooking.Api.Contracts.Responses;
+using ConferenceRoomBooking.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -21,12 +22,12 @@ namespace ConferenceRoomBooking.Api.Controllers
             var conferenceRooms = await _context.ConferenceRooms
                 .AsNoTracking()
                 .Where(conferenceRoom => !conferenceRoom.IsDeleted)
-                .Select(conferenceRoom => new
+                .Select(conferenceRoom => new ConferenceRoomResponse
                 {
-                    conferenceRoom.Id,
-                    conferenceRoom.Name,
-                    conferenceRoom.Capacity,
-                    conferenceRoom.BaseHourlyRate
+                    Id = conferenceRoom.Id,
+                    Name = conferenceRoom.Name,
+                    Capacity = conferenceRoom.Capacity,
+                    BaseHourlyRate = conferenceRoom.BaseHourlyRate
                 })
                 .ToListAsync();
 
