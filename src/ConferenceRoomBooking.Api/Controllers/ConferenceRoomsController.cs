@@ -192,5 +192,25 @@ namespace ConferenceRoomBooking.Api.Controllers
 
             return Ok(response);
         }
+
+        [HttpDelete("{id:int}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var conferenceRoom = await _context.ConferenceRooms
+                .FirstOrDefaultAsync(conferenceRoom =>
+                    conferenceRoom.Id == id && !conferenceRoom.IsDeleted);
+
+            if (conferenceRoom is null)
+            {
+                return NotFound();
+            }
+
+            conferenceRoom.IsDeleted = true;
+            conferenceRoom.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
     }
 }
