@@ -33,5 +33,29 @@ namespace ConferenceRoomBooking.Api.Controllers
 
             return Ok(conferenceRooms);
         }
+
+        [HttpGet("{id:int}")]
+        public async Task<IActionResult> GetById(int id)
+        {
+            var conferenceRoom = await _context.ConferenceRooms
+                .AsNoTracking()
+                .Where(conferenceRoom => !conferenceRoom.IsDeleted)
+                .Where(conferenceRoom => conferenceRoom.Id == id)
+                .Select(conferenceRoom => new ConferenceRoomResponse
+                {
+                    Id = conferenceRoom.Id,
+                    Name = conferenceRoom.Name,
+                    Capacity = conferenceRoom.Capacity,
+                    BaseHourlyRate = conferenceRoom.BaseHourlyRate
+                })
+                .FirstOrDefaultAsync();
+
+            if (conferenceRoom is null)
+            {
+                return NotFound();
+            }
+
+            return Ok(conferenceRoom);
+        }
     }
 }
