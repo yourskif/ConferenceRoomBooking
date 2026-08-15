@@ -23,6 +23,41 @@ namespace ConferenceRoomBooking.Api.Controllers
             _pricingService = pricingService;
         }
 
+        [HttpGet("{id:int}")]
+        public async Task<IActionResult> GetById(int id)
+        {
+            var booking = await _context.Bookings
+                .AsNoTracking()
+                .Include(booking => booking.BookingExtraServices)
+                .FirstOrDefaultAsync(booking => booking.Id == id);
+
+            if (booking is null)
+            {
+                return NotFound();
+            }
+
+            var response = new BookingResponse
+            {
+                Id = booking.Id,
+                ConferenceRoomId = booking.ConferenceRoomId,
+                StartTime = booking.StartTime,
+                EndTime = booking.EndTime,
+                RoomPrice = booking.RoomPrice,
+                ServicesPrice = booking.ServicesPrice,
+                TotalPrice = booking.TotalPrice,
+                Services = booking.BookingExtraServices
+                    .Select(bookingExtraService => new BookingExtraServiceResponse
+                    {
+                        ExtraServiceId = bookingExtraService.ExtraServiceId,
+                        ServiceName = bookingExtraService.ServiceName,
+                        Price = bookingExtraService.Price
+                    })
+                    .ToList()
+            };
+
+            return Ok(response);
+        }
+
         [HttpPost]
         public async Task<IActionResult> Create(CreateBookingRequest request)
         {
