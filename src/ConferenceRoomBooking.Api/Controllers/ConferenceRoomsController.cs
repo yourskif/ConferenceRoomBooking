@@ -1,6 +1,6 @@
-﻿using ConferenceRoomBooking.Domain.Entities;
-using ConferenceRoomBooking.Api.Contracts.Requests;
+﻿using ConferenceRoomBooking.Api.Contracts.Requests;
 using ConferenceRoomBooking.Api.Contracts.Responses;
+using ConferenceRoomBooking.Domain.Entities;
 using ConferenceRoomBooking.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -34,6 +34,38 @@ namespace ConferenceRoomBooking.Api.Controllers
                 .ToListAsync();
 
             return Ok(conferenceRooms);
+        }
+
+        [HttpGet("available")]
+        public async Task<IActionResult> GetAvailable([FromQuery] AvailableConferenceRoomsRequest request)
+        {
+            if (request.StartTime >= request.EndTime)
+            {
+                return BadRequest("Start time must be earlier than end time.");
+            }
+
+            if (request.Capacity <= 0)
+            {
+                return BadRequest("Capacity must be greater than zero.");
+            }
+
+            var availableRooms = await _context.ConferenceRooms
+                .AsNoTracking()
+                .Where(conferenceRoom => !conferenceRoom.IsDeleted)
+                .Where(conferenceRoom => conferenceRoom.Capacity >= request.Capacity)
+                .Where(conferenceRoom => !conferenceRoom.Bookings.Any(booking =>
+                    booking.StartTime < request.EndTime &&
+                    request.StartTime < booking.EndTime))
+                .Select(conferenceRoom => new ConferenceRoomResponse
+                {
+                    Id = conferenceRoom.Id,
+                    Name = conferenceRoom.Name,
+                    Capacity = conferenceRoom.Capacity,
+                    BaseHourlyRate = conferenceRoom.BaseHourlyRate
+                })
+                .ToListAsync();
+
+            return Ok(availableRooms);
         }
 
         [HttpGet("{id:int}")]
