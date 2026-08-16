@@ -95,6 +95,12 @@ namespace ConferenceRoomBooking.Api.Controllers
                 return BadRequest("Start time must be earlier than end time.");
             }
 
+            if (request.StartTime <= DateTime.UtcNow)
+            {
+                return BadRequest("Booking start time must be in the future.");
+            }
+
+
             var conferenceRoom = await _context.ConferenceRooms
                 .Include(conferenceRoom => conferenceRoom.RoomExtraServices)
                 .FirstOrDefaultAsync(conferenceRoom =>
